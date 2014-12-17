@@ -1,3 +1,7 @@
 name: DreamMessages
 main: com.hideyourfire.ralphhogaboom.DreamMessages.Main
 version: 0.1
+commands:
+   dreams:
+      description: Allows an op or admin to add and remove player dreams.
+      usage: Type /dreams for information on using this plugin.
