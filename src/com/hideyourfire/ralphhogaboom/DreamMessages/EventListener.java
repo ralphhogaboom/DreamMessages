@@ -51,9 +51,10 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onWakeup(PlayerBedLeaveEvent event) {
 		if (day()) {
-			Main.getPlugin().getLogger().info("It's day now, so let's proceed.");
-			int random = randInt(0, 14);
-			if (random < 9) {
+			Player player = event.getPlayer();
+			Main.getPlugin().getLogger().info(player.getDisplayName() + " slept: But it's day now, so let's proceed.");
+			int random = randInt(0, 12);
+			if (random < 12) {
 				String[] dreams = new String[12];
 				dreams[0] = "Last night you dreamed of a black and red snake. The snake flew into the air, away from you.";
 				dreams[1] = "You awaken, having dreamed of a vast underwater temple, containing a new kind of treasure.";
@@ -67,14 +68,13 @@ public class EventListener implements Listener {
 				dreams[9] = "You awake from a nightmare of a tower, burning endlessly through the night while laughter rings out.";
 				dreams[10] = "In your dreams, a trusted friend hands you a diamond sword, but you are too weak to hold it. Overhead, you hear the sound of ghasts.";
 				dreams[11] = "You dream this night of a powerful force flowing through you, giving you powers you never dreamed of before.";
-				Player player = event.getPlayer();
-				Main.getPlugin().getLogger().info("Now entering a wakeup event w/ dream # " + random + " for " + player.getDisplayName());
+				Main.getPlugin().getLogger().info(player.getDisplayName() + " dreamed: " + dreams[random]);
 				player.sendMessage(ChatColor.AQUA + dreams[random]);
 				if (random == 8 || random == 10) {
-					player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1));
+					player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 1));
 				}
 				if (random == 7 || random == 9) {
-					player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
+					player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, 1));
 				}
 			}
 		} else {
