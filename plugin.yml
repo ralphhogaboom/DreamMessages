@@ -1,7 +1,15 @@
 name: DreamMessages
 main: com.hideyourfire.ralphhogaboom.DreamMessages.Main
-version: 0.1
+version: Bluebird, build 20150102
 commands:
    dreams:
       description: Allows an op or admin to add and remove player dreams.
-      usage: Type /dreams for information on using this plugin.
+      usage: /dreams (add|list|delete)
+      default: false
+permissions:
+    dreams.admin:
+        description: Players with this permission node can add, list, and delete dreams.
+        default: false
+    dreams.get:
+        description: Players with this permission will dream when they wake up after sleeping.
+        default: true

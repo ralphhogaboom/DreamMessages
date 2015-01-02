@@ -1,27 +1,62 @@
 package com.hideyourfire.ralphhogaboom.DreamMessages;
 
 import java.io.File;
-import java.util.List;
-
+import java.sql.SQLException;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import lib.PatPeter.SQLibrary.SQLite;
+
 public class Main extends JavaPlugin {
+
 	private static Plugin plugin;
+	private SQLite sqlite;
+	private boolean debug = false;
 	
     File configFile;
     FileConfiguration config;
-	public static List<String> dreams;
-	public static List<String> nightmares;
     
 	public void onEnable() {	
 		plugin = this;
-		registerEvents(this, new EventListener());
+		this.saveDefaultConfig(); // For first run, save default config file.
+		this.getConfig();
+		debug = this.getConfig().getBoolean("debug");
+		Main.getPlugin().getLogger().info("Debug output? " + doDebug());
+		sqlConnection();
+		sqlTableCheck("dreams");
+		registerEvents(this, new EventListener(this));
 		getCommand("dreams").setExecutor(new Commands());
-		readDreams();
+	}
+
+	@SuppressWarnings("deprecation")
+	public void sqlTableCheck(String tableName) {
+	    if(sqlite.checkTable(tableName)){
+	    	this.getLogger().info("Database opened; table '" + tableName + "' found.");
+	    	return;
+	    } else {
+			try {
+				sqlite.query("CREATE TABLE IF NOT EXISTS `dreams` (	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,	`isNightmare`	INTEGER DEFAULT 0, `dream`	TEXT );");
+			} catch (SQLException e) {
+				if (doDebug()) {
+					e.printStackTrace();
+				}
+			}
+	        plugin.getLogger().info("Table '" + tableName + "' has been created");
+	    }
+	}
+
+	public void sqlConnection() {
+		sqlite = new SQLite(Main.getPlugin().getLogger(), "DreamMessages", Main.getPlugin().getDataFolder().getAbsolutePath(), "dreams");
+		try {
+			sqlite.open();
+		} catch (Exception e) {
+			if (doDebug()) {
+				Main.getPlugin().getLogger().info(e.getMessage());
+			}
+		}
 	}
 	
 	private void registerEvents(org.bukkit.plugin.Plugin plugin, Listener...listeners) {
@@ -38,29 +73,7 @@ public class Main extends JavaPlugin {
 		return plugin;
 	}
 
-	public void readDreams() {
-		// This also reads in the nightmares.
-		dreams = (List<String>) this.getConfig().getList("dreams");
-		nightmares = (List<String>) this.getConfig().getList("nightmares");
+	public boolean doDebug() {
+		return debug;
 	}
-	
-	public void saveDreams() {
-		// This also saves nightmares.
-		
-	}
-	
-	public void addDream(String dreamText, boolean isNightmare) {
-		// This also adds nightmares.
-		if (isNightmare) {
-			nightmares.add(dreamText);
-		} else {
-			dreams.add(dreamText);
-		}
-	}
-	
-	public void deleteDream() {
-		// This also deletes nightmares.
-		
-	}
-	
 }
