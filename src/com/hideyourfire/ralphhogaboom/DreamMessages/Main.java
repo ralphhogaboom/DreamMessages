@@ -24,11 +24,11 @@ public class Main extends JavaPlugin {
 		this.saveDefaultConfig(); // For first run, save default config file.
 		this.getConfig();
 		debug = this.getConfig().getBoolean("debug");
-		Main.getPlugin().getLogger().info("Debug output? " + doDebug());
+		Main.getPlugin().getLogger().info("Show debug output: " + doDebug());
 		sqlConnection();
 		sqlTableCheck("dreams");
 		registerEvents(this, new EventListener(this));
-		getCommand("dreams").setExecutor(new Commands());
+		getCommand("dreams").setExecutor(new Commands(this));
 	}
 
 	@SuppressWarnings("deprecation")
@@ -74,6 +74,9 @@ public class Main extends JavaPlugin {
 	}
 
 	public boolean doDebug() {
-		return debug;
+		if (debug) {
+			return true;
+		}
+		return false;
 	}
 }

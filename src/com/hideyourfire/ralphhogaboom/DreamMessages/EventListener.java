@@ -47,17 +47,23 @@ public class EventListener implements Listener {
 					String sqlQuery = "SELECT COUNT(id) AS totalDreams FROM dreams;";
 					ResultSet rs = sqlite.query(sqlQuery);
 					while (rs.next()) {
-						Main.getPlugin().getLogger().info("Total dreams + nightmares on file: " + rs.getInt("totalDreams"));
+						if (thisInstance.doDebug()) {
+							Main.getPlugin().getLogger().info("Total dreams + nightmares on file: " + rs.getInt("totalDreams"));
+						}
 					}
+					rs.close();
 					sqlQuery = "SELECT * FROM dreams ORDER BY RANDOM() LIMIT 1;";
 					rs = sqlite.query(sqlQuery);
 					while (rs.next()) {
-						player.sendMessage(ChatColor.AQUA + rs.getString("dream"));
 						if (rs.getInt("isNightmare") != 0) {
+							player.sendMessage(ChatColor.LIGHT_PURPLE + rs.getString("dream"));
 							player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 1));
 							player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 300, 1));
+						} else {
+							player.sendMessage(ChatColor.AQUA + rs.getString("dream"));
 						}
 					}
+					rs.close();
 				} catch (SQLException e) {
 					if (thisInstance.doDebug()) {
 						Main.getPlugin().getLogger().info(e.getMessage());
@@ -73,9 +79,7 @@ public class EventListener implements Listener {
 		try {
 			sqlite.open();
 		} catch (Exception e) {
-			if (thisInstance.doDebug()) {
-				Main.getPlugin().getLogger().info(e.getMessage());
-			}
+			Main.getPlugin().getLogger().info(e.getMessage());
 			Main.getPlugin().getLogger().info("Unable to open database; players will not receive dreams.");
 		}
 	}

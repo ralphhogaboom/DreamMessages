@@ -15,14 +15,18 @@ public class Commands implements CommandExecutor {
 
 	Main thisInstance;
 	public SQLite sqlite;
-
+	
+	public Commands(Main instance) {
+		thisInstance = instance;
+	}
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		// Check if sender has permissions
 		if (sender instanceof Player) {
 			Player player = (Player) sender;
 			if (!(player.hasPermission("dreams.admin"))) {
-				sender.sendMessage("Sorry, you don't have permission to use this command. Missing 'dreams.admin' permissions node.");
+				sender.sendMessage(ChatColor.YELLOW + "Sorry, you don't have permission to use this command. Missing 'dreams.admin' permissions node.");
 				return false;
 			}
 		}
@@ -43,12 +47,15 @@ public class Commands implements CommandExecutor {
 								sender.sendMessage("" + ChatColor.RED + i + ": " + rs.getString("dream"));
 							}
 						}
+						rs.close();
 						if (i < 1) {
 							sender.sendMessage("There are no dreams or nightmares recorded. Type " + ChatColor.GOLD + "/dreams add" + ChatColor.WHITE + " to begin creating dreams.");
 						}
 					} catch (SQLException e) {
-						sender.sendMessage("Can't list dreams - an error occured (the database file is probably locked).");
-						e.printStackTrace();
+						sender.sendMessage(ChatColor.RED + "Can't list dreams - an error occured (the database file is probably locked).");
+						if (thisInstance.doDebug()) {
+							e.printStackTrace();
+						}
 					}
 				}
 				if (args[0].equalsIgnoreCase("add")) {
@@ -58,8 +65,11 @@ public class Commands implements CommandExecutor {
 							// Get the whole sentence, minus the first two args
 							StringBuilder dream = new StringBuilder();
 							for (int s = 2; s < args.length; s++) {
-								dream.append(args[s].replace("'", "\'"));
+								dream.append(args[s].replace("'", "''"));
 								dream.append(" ");
+							}
+							if (thisInstance.doDebug()) {
+								Main.getPlugin().getLogger().info("StringBuilder dream: " + dream);
 							}
 							// Figger if it's a dream or it ain't
 							int isNightmare = 0;
@@ -67,20 +77,23 @@ public class Commands implements CommandExecutor {
 								isNightmare = -1;
 							}
 							String sqlQuery = "INSERT INTO dreams (isNightmare, dream) VALUES (" + isNightmare + ", '" + dream.toString() + "');";
+							if (thisInstance.doDebug()) {
+								Main.getPlugin().getLogger().info("sqlQuery: " + sqlQuery);
+							}
 							try {
 								sqlConnection();
 								sqlite.query(sqlQuery);
-								sender.sendMessage("Dream added successfully.");
+								sender.sendMessage(ChatColor.DARK_GREEN + "Dream added successfully.");
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
 						} else {
-							sender.sendMessage("Missing " + ChatColor.GOLD + "dream|nightmare" + ChatColor.WHITE + " - check your syntax and try again.");
-							sender.sendMessage("  Ex: " + ChatColor.GOLD + "/dream add nightmare This night you dreamed of a creeper, standing at the foot of your bed!");
+							sender.sendMessage(ChatColor.YELLOW + "Missing " + ChatColor.GOLD + "dream|nightmare" + ChatColor.WHITE + " - check your syntax and try again.");
+							sender.sendMessage("  Ex: " + ChatColor.GOLD + "/dreams add nightmare This night you dreamed of a creeper, standing at the foot of your bed!");
 						}
 					} else {
-						sender.sendMessage("Missing " + ChatColor.GOLD + "dream|nightmare" + ChatColor.WHITE + " - check your syntax and try again.");
-						sender.sendMessage("  Ex: " + ChatColor.GOLD + "/dream add nightmare This night you dreamed of a creeper, standing at the foot of your bed!");
+						sender.sendMessage(ChatColor.YELLOW + "Missing " + ChatColor.GOLD + "dream|nightmare" + ChatColor.WHITE + " - check your syntax and try again.");
+						sender.sendMessage("  Ex: " + ChatColor.GOLD + "/dreams add nightmare This night you dreamed of a creeper, standing at the foot of your bed!");
 					}
 				}
 				if (args[0].equalsIgnoreCase("delete")) {
@@ -100,33 +113,35 @@ public class Commands implements CommandExecutor {
 										sqlQuery = "DELETE FROM dreams WHERE id = " + rs.getInt("id") + ";";
 									}
 								}
+								rs.close();
 								try {
 									sqlite.query(sqlQuery);
 									sender.sendMessage("Dream " + args[1].toString() + " has been deleted.");
 								} catch (SQLException e) {
-									sender.sendMessage("An internal error occurred; check the console log for specific errors.");
 									e.printStackTrace();
+									sender.sendMessage("An internal error occurred; check the console log for specific errors.");
 								}
+								rs.close();
 							} catch (SQLException e1) {
 								e1.printStackTrace();
 							}
 						} else {
-							sender.sendMessage("Error: missing or incorrect number of arguments.");
-							sender.sendMessage("Example: /dreams delete 21");
+							sender.sendMessage(ChatColor.YELLOW + "Unrecognized command format.");
+							sender.sendMessage("  Example: " + ChatColor.GOLD + "/dreams delete 21");
 							return false;
 						}
 					} else {
-						sender.sendMessage("Error: missing or incorrect number of arguments.");
-						sender.sendMessage("Example: /dreams delete 21");
+						sender.sendMessage(ChatColor.YELLOW + "Unrecognized command format.");
+						sender.sendMessage("  Example: " + ChatColor.GOLD + "/dreams delete 21");
 						return false;
 					}
 				}
 			} else {
-				sender.sendMessage("Error: unrecognized command syntax.");
-				sender.sendMessage("Format should be /dreams (add|delete|list).");
-				sender.sendMessage("Example: /dreams list");
-				sender.sendMessage("Example: /dreams add nightmare Tonight you dreamed of a creeper standing at the foot of your bed!");
-				sender.sendMessage("Example: /dreams delete 21");
+				sender.sendMessage(ChatColor.YELLOW + "Unrecognized command format.");
+				sender.sendMessage("Format is " + ChatColor.GOLD + "/dreams (add|delete|list)" + ChatColor.WHITE + ".");
+				sender.sendMessage("Example: " + ChatColor.GOLD + "/dreams list");
+				sender.sendMessage("    or: " + ChatColor.GOLD + "/dreams add nightmare Tonight you dreamed of a creeper standing at the foot of your bed!");
+				sender.sendMessage("    or: " + ChatColor.GOLD + "/dreams delete 21");
 				return false;
 			}
 		}
@@ -144,16 +159,12 @@ public class Commands implements CommandExecutor {
 		}
 	}
 
-	public static boolean isNumeric(String str)  
-	{  
-	  try  
-	  {  
-	    double d = Double.parseDouble(str);  
-	  }  
-	  catch(NumberFormatException nfe)  
-	  {  
-	    return false;  
-	  }  
-	  return true;  
+	public static boolean isNumeric(String str) {  
+		try {  
+			double d = Double.parseDouble(str);  
+		} catch(NumberFormatException nfe) {  
+			return false;  
+		}  
+		return true;  
 	}
 }

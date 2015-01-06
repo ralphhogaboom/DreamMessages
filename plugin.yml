@@ -1,6 +1,6 @@
 name: DreamMessages
 main: com.hideyourfire.ralphhogaboom.DreamMessages.Main
-version: Bluebird, build 20150102
+version: Bluebird, build 20150103
 commands:
    dreams:
       description: Allows an op or admin to add and remove player dreams.
