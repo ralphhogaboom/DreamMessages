@@ -1,1 +1,17 @@
+#################################################
+#                 DREAM MESSAGES                #
+#             custom plugin originally          #
+#                   written for                 #
+#              play.hideyourfire.com            #
+#                                               #
+#               config version 1.0              #
+#                                               #
+#################################################
+#
+# If something's not working right, enable this
+# before opening a ticket. Attach your server.log
+# file with the ticket, so I can see what's going
+# on.
+# 
+
 debug: false

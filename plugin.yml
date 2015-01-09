@@ -1,6 +1,6 @@
 name: DreamMessages
 main: com.hideyourfire.ralphhogaboom.DreamMessages.Main
-version: Bluebird, build 20150103
+version: Bluebird, build 20150108
 commands:
    dreams:
       description: Allows an op or admin to add and remove player dreams.
@@ -12,4 +12,4 @@ permissions:
         default: false
     dreams.get:
         description: Players with this permission will dream when they wake up after sleeping.
-        default: true
+        default: false
